@@ -76,8 +76,8 @@
                 <div class="modal-body">
                     <form>
                         <div class="mb-3">
-                            <label for="recipient-name" class="col-form-label">UserName:</label>
-                            <input type="text" class="form-control" id="userName" value="A7med2001">
+                            <label for="recipient-name" class="col-form-label">Email:</label>
+                            <input type="email" class="form-control" id="userName" value="">
                         </div>
                         <div class="mb-3">
                             <label for="message-text" class="col-form-label">Password:</label>
@@ -261,7 +261,7 @@
                         commentsContent+=`
                             <div class="comments" style="padding: 15px 7px;background-color: rgb(243, 236, 226);">
                             <div class="userInfo">
-                                <img style="width: 40px;height: 40px;border-radius: 50%;" src="${comment.author.profile_image}" alt="">
+                                <img style="width: 40px;height: 40px;border-radius: 50%;" src="${getImageUrl(comment.author.profile_image)}" alt="">
                                 <span style="margin-left: 10px;">${comment.author.username}</span>
 
                                 
@@ -281,7 +281,7 @@
                     }
                     let content = `<div id="postContent" class="content shadow my-2">
                     <div style="display:flex;align-items:center;cursor:pointer" onclick="userClicked(${author.id})">
-                        <img src="${author.profile_image}" class="profile" alt="">
+                        <img src="${getImageUrl(author.profile_image)}" class="profile" alt="">
                         <h6 style="margin-left:5px">${author.name}</h6>
                     </div>
                 <div class="contentText">

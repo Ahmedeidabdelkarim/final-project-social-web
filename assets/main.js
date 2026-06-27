@@ -1,6 +1,10 @@
 
 setUI();
 
+function getImageUrl(image) {
+  return typeof image === "string" ? image : "";
+}
+
 let baseURL = "https://tarmeezacademy.com/api/v1";
 let currentPage=1;
 let lastPage=1;
@@ -58,7 +62,7 @@ window.addEventListener("scroll",function(){
             <div class="content shadow my-2"">
             <div class="nav">
                 <div onclick="userClicked(${author.id})" style="display:flex;align-items:center;cursor:pointer">
-                  <img style="width:32px;height:30px" src="${author.profile_image}" class="profile" alt="">
+                  <img style="width:32px;height:30px" src="${getImageUrl(author.profile_image)}" class="profile" alt="">
                   <h6>${author.name}</h6>
                 </div>
 
@@ -147,7 +151,7 @@ function setUI() {
     let userName = document.getElementById("usname");
     let profileImg = document.getElementById("PImge");
     userName.textContent=getCurrentUser().username;
-    profileImg.src=`${getCurrentUser().profile_image}`
+    profileImg.src = getImageUrl(getCurrentUser().profile_image);
     
   }
 }
@@ -173,8 +177,10 @@ function loginBtnClicked() {
   toggleLoader(true);
 
   axios.post("https://tarmeezacademy.com/api/v1/login",{
-    "username" : userName,
+    "email" : userName,
     "password" : Password
+},{
+  headers: { "Accept": "application/json" }
 })
   .then((response) => {
 
@@ -195,10 +201,12 @@ function loginBtnClicked() {
     location.reload();
     getUser();
     getUserPosts();
+  })
+  .catch((err) => {
+    toggleLoader(false);
+    const message = err.response?.data?.message || "Login failed. Please check your email and password.";
+    showAlert(message, "danger");
   });
-
-
-  
 }
 
 
@@ -261,8 +269,10 @@ function registerBtnClicked(){
   registerData.append("username" , registerUserName)
   registerData.append("password" , registerPassword)
   registerData.append("name" , registerName)
-  registerData.append("image" , registerImg)
   registerData.append("email" , registerEmail)
+  if (registerImg) {
+    registerData.append("image" , registerImg)
+  }
 
   toggleLoader(true);
 
@@ -288,7 +298,12 @@ function registerBtnClicked(){
     getUserPosts();
     
   }).catch(err=>{
-    let message = err.reponse.data.message;
+    toggleLoader(false);
+    const data = err.response?.data;
+    let message = data?.message || "Registration failed.";
+    if (data?.errors) {
+      message = Object.values(data.errors).flat().join(", ");
+    }
     showAlert(message,"danger")
   })
 
@@ -421,7 +436,7 @@ function confirmPostDelete(){
     getUser();
     
   }).catch(error=>{
-    const message=error.reponse.data.message;
+    const message = error.response?.data?.message || "Failed to delete post.";
     showAlert(message,"danger")
   })
 
@@ -451,6 +466,10 @@ function addBtnClicked(){
 
 function profileClicked(){
   let user=getCurrentUser();
+  if(!user){
+    showAlert("Please login first","danger");
+    return;
+  }
   let userid=user.id;
   window.location=`/assets/profile.html?userid=${userid}`;
 }

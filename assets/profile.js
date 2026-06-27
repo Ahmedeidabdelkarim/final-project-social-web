@@ -1,9 +1,48 @@
-setUI();
 
-function getCurrentUserId(){
-let urlParams = new URLSearchParams(window.location.search);
-let id = urlParams.get("userid")
-return id
+function getImageUrl(image) {
+    return typeof image === "string" ? image : "";
+}
+
+function setUI() {
+    let RegisterNewUser = document.getElementById("newUser");
+    let logoutBtn = document.querySelector("#logoutBtn");
+    let addPost = document.querySelector("#addPost");
+
+    let infoOfUser = document.querySelector("#userInfo");
+
+    let token = localStorage.getItem("token");
+
+
+    if (token == null) {
+        if (addPost != null) {
+            addPost.style.setProperty("display", "none", "important");
+
+        }
+
+        RegisterNewUser.style.setProperty("display", "flex", "important");
+        logoutBtn.style.setProperty("display", "none", "important");
+        infoOfUser.style.setProperty("display", "none", "important");
+
+    } else {
+
+        if (addPost != null) {
+            addPost.style.setProperty("display", "block", "important");
+        }
+
+        RegisterNewUser.style.setProperty("display", "none", "important")
+        logoutBtn.style.setProperty("display", "flex", "important");
+        infoOfUser.style.setProperty("display", "flex", "important");
+        let userName = document.getElementById("usname");
+        let profileImg = document.getElementById("PImge");
+        userName.textContent = getCurrentUser().username;
+        profileImg.src = getImageUrl(getCurrentUser().profile_image);
+
+    }
+}
+function getCurrentUserId() {
+    let urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get("userid")
+    return id
 }
 
 /* let user=JSON.parse(localStorage.getItem("user"))
@@ -11,31 +50,33 @@ let userId=user.id;
 console.log(userId); */
 
 function getUser() {
-    const userId=getCurrentUserId();
-    axios.get(`${baseURL}/users/${userId}}`)
+    const userId = getCurrentUserId();
+    if (!userId) return;
+    axios.get(`https://tarmeezacademy.com/api/v1/users/${userId}`)
         .then((response) => {
             //console.log(response.data.data);
             let user = response.data.data;
-            document.getElementById("info-mail").textContent=user.email;
-            document.getElementById("info-name").textContent=user.name;
-            document.getElementById("info-username").textContent=user.username;
-            document.getElementById("post-count").textContent=user.posts_count;
-            document.getElementById("comment-count").textContent=user.comments_count;
-            document.getElementById("info-img").src=user.profile_image;
-            document.getElementById("UserName").textContent=`${user.username}'s`;
-            })
+            document.getElementById("info-mail").textContent = user.email;
+            document.getElementById("info-name").textContent = user.name;
+            document.getElementById("info-username").textContent = user.username;
+            document.getElementById("post-count").textContent = user.posts_count;
+            document.getElementById("comment-count").textContent = user.comments_count;
+            document.getElementById("info-img").src = getImageUrl(user.profile_image);
+            document.getElementById("UserName").textContent = `${user.username}'s`;
+        })
+        .catch((err) => console.error(err.response?.data?.message || err.message));
 }
-getUser();
 
 
 
 function getUserPosts() {
-    const userId=getCurrentUserId();
+    const userId = getCurrentUserId();
+    if (!userId) return;
     axios.get(`https://tarmeezacademy.com/api/v1/users/${userId}/posts`)
         .then((response) => {
             console.log(response.data.data);
             let posts = response.data.data;
-            document.getElementById("profile-posts").innerHTML="";
+            document.getElementById("profile-posts").innerHTML = "";
             for (post of posts) {
                 let author = post.author;
                 let postImage = post.image;
@@ -63,7 +104,7 @@ function getUserPosts() {
                 <div class="content shadow my-2"">
                     <div class="nav">
                         <div style="display:flex;align-items:center;">
-                            <img style="width:32px;height:30px" src="${author.profile_image}" class="profile" alt="">
+                            <img style="width:32px;height:30px" src="${getImageUrl(author.profile_image)}" class="profile" alt="">
                             <h6>${author.name}</h6>
                         </div>
         
@@ -101,20 +142,24 @@ function getUserPosts() {
                 `;
                 document.getElementById("profile-posts").innerHTML += content;
 
-                let currentPostId=`post-tags-${post.id}`;
-                document.getElementById(currentPostId).innerHTML="";
+                let currentPostId = `post-tags-${post.id}`;
+                document.getElementById(currentPostId).innerHTML = "";
                 //console.log(post.tags);
-                for(tag of post.tags){
-                    let tagsContent=`
+                for (tag of post.tags) {
+                    let tagsContent = `
                         <button style="background-color:gray;border:none;" class="rounded-5">${tag.name}</button>
                     `
-                    document.getElementById(currentPostId).innerHTML+=tagsContent;
+                    document.getElementById(currentPostId).innerHTML += tagsContent;
                 }
-                
+
                 setUI();
-                            
+
             }
         })
+        .catch((err) => console.error(err.response?.data?.message || err.message));
 }
 
-getUserPosts();
+if (document.getElementById("profile-posts")) {
+    getUser();
+    getUserPosts();
+}
